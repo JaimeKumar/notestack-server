@@ -1,5 +1,6 @@
 require('dotenv').config()
 const MongoClient = require('mongodb').MongoClient;
+const { ObjectId } = require('mongodb');
 const uri = `mongodb+srv://notestack-user:${process.env.MONGO_PW}@notestack-cluster.0dqnhow.mongodb.net/?retryWrites=true&w=majority`
 const express = require('express')
 const app = express();
@@ -23,12 +24,13 @@ const newClient = async () => {
 async function writeDB(newJSON) {
     try {
         const { client, collection } = await newClient()
-        let id = newJSON._id;
-        delete newJSON._id
+        let rawID = newJSON._id;
+        let id = new ObjectId(rawID);
+        delete newJSON._id;
         const updateOperation = {
             $set: newJSON
         };
-        await collection.updateOne({_id: id}, updateOperation)
+        let success = await collection.updateOne({_id: id}, updateOperation)
         client.close()
         return true
     } catch (err) {
